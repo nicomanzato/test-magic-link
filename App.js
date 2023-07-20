@@ -1,11 +1,61 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Button, View, Text } from 'react-native';
+import { Magic } from "@magic-sdk/react-native-expo"
+import { useEffect, useState } from 'react';
+import { OAuthExtension } from '@magic-ext/react-native-expo-oauth';
+import { SolanaExtension } from '@magic-ext/solana';
+
+const rpcUrl = 'https://api.devnet.solana.com';
+
+const magic = new Magic('pk_live_0E7E6D22DA107D14', { 
+  network: 'solana', 
+  extensions: [
+    new OAuthExtension(),
+    new SolanaExtension({
+      rpcUrl,
+    }),
+  ]
+});
 
 export default function App() {
+  const [publicAddress, setPublicAddress] = useState('');
+  const [userMetadata, setUserMetadata] = useState();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    magic.user.isLoggedIn().then(async magicIsLoggedIn => {
+      setIsLoggedIn(magicIsLoggedIn);
+      if (magicIsLoggedIn) {
+        const metadata = await magic.user.getInfo();
+        setPublicAddress(metadata.publicAddress || '');
+        setUserMetadata(metadata);
+      }
+    });
+  }, [isLoggedIn]);
+
+  const showUI = async () => {
+    await magic.wallet.connectWithUI();
+    await magic.wallet.showUI();
+  }
+
+
+  const login = () => {
+    magic.oauth.loginWithPopup({
+      provider: 'google',
+      redirectURI: 'stesp://',
+    });
+    setIsLoggedIn(true);
+  }
+
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
       <StatusBar style="auto" />
+      {!publicAddress && <Button title={'Login'} onPress={login}/>}
+      {publicAddress && <View>
+        <Text>Address : {publicAddress}</Text>
+        <Button title={'Show UI'} onPress={showUI}/>
+      </View>}
+      <magic.Relayer />
     </View>
   );
 }
