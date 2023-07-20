@@ -38,7 +38,6 @@ export default function App() {
     await magic.wallet.showUI();
   }
 
-
   const login = () => {
     magic.oauth.loginWithPopup({
       provider: 'google',
@@ -46,14 +45,19 @@ export default function App() {
     });
     setIsLoggedIn(true);
   }
+  const logout = () => {
+    magic.user.logout();
+    setIsLoggedIn(false);
+  }
 
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-      {!publicAddress && <Button title={'Login'} onPress={login}/>}
-      {publicAddress && <View>
+      {!isLoggedIn && <Button title={'Login'} onPress={login}/>}
+      {isLoggedIn && <View>
         <Text>Address : {publicAddress}</Text>
         <Button title={'Show UI'} onPress={showUI}/>
+        <Button title={'Logout'} onPress={logout}/>
       </View>}
       <magic.Relayer />
     </View>
