@@ -38,11 +38,12 @@ export default function App() {
     await magic.wallet.showUI();
   }
 
-  const login = () => {
-    magic.oauth.loginWithPopup({
+  const login = async () => {
+    await magic.oauth.loginWithPopup({
       provider: 'google',
       redirectURI: 'stesp://',
     });
+
     setIsLoggedIn(true);
   }
   const logout = () => {
